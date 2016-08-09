@@ -15,28 +15,49 @@
 // $(document).ready(function() {
   var app = {};
   app.rooms = {};
+  app.friends = {};
+  var currentRoom = 'All Messages';
 
   app.init = function() {
     $(document).ready(function() {
-      $('.username').on('click', function() {
+      $('#chats').on('click', '.username', function() {
         var name = $(this).text();
+        var name = name.match(/[^:]*/)[0];
         app.addFriend(name);
+        console.log('clicked name is', name);
 
       });
 
       $('.submit').on('click', function() {
         var username = $('.username').val();
         var message = $('#message').val();
-        console.log(message);
         app.handleSubmit(message, username);
         return false;
       });
 
+      $('#roomSelect').on('click', '.room', function() {
+        var dropClicked = $(this).text();
+
+        if (dropClicked === '--add a room--') {
+          var roomName = window.prompt('Enter name of room.');
+          var message = {roomname: roomName};
+          app.send(message);
+          currentRoom = roomName;
+        } else {
+          currentRoom = dropClicked;
+        }
+        dropdown();
+        $('.roomShow').text('You are currently in room: ' + currentRoom);
+      });
+
       setInterval(function() {
         app.fetch();
-      }, 8000);
+      }, 1000);
 
     });
+
+
+
     //var fetchMessageResponses = fetchMessage.responseJSON;
     //console.log('fetchMessageResponses', fetchMessageResponses);
     // for (var i = 0; i < 10; i++) {
@@ -87,17 +108,33 @@
 
   app.displayMessages = function(messages) {
 
-    console.log('entered');
-    var selection = d3.select('body').select('#chats').selectAll('p').data(messages);
-    console.log('selection: ', selection, selection.length);
-    console.log('enter: ',selection.enter(), selection.enter().length);
-    console.log('exit ', selection.exit(), selection.exit().length);
+    app.clearMessages();
+
+    var selection = d3.select('#chats')
+    .selectAll('div').data(messages, function(d, i) {
+      return d.objectId;
+    });
+
+    // console.log(selection.enter()[0].length);
+    // console.log(selection.exit()[0].length);
+
     selection.enter()
-    .append("p")
+    .append('div')
     .attr('id', 'message')
-    .attr('class', function(d) { return d.roomname; })
+    .attr('class', function(d) { 
+      // console.log('inside selection.enter()');
+      return d.roomname + ' username'; 
+    })
+    .style('font-weight', function(d) { 
+      if (app.friends[d.username]) {
+        return 'bold';
+      } else {
+        return 'normal';
+      } 
+    })
     .text(function(d) { return d.username + ': ' + d.text; });
 
+    selection.exit().remove();
   };
 
   app.messageHandling = function(messages) {
@@ -111,21 +148,31 @@
       for (var key in doneMessages.results[i]) {
         cleanMessages[key] = app.escapeRegEx(doneMessages.results[i][key]);
 
+        //Adding unique roomnames to our Room List
         if (key === 'roomname' && cleanMessages[key].length < 100 && !(app.rooms[cleanMessages[key]])) {
           app.rooms[cleanMessages[key]] = app.rooms[cleanMessages[key]] || [];
-          app.rooms[cleanMessages[key]].push(cleanMessages.text);
+          app.rooms[cleanMessages[key]].push(cleanMessages.text); //maybe remove (?)
           app.addRoom(cleanMessages[key]);
         }
+
       }
       //app.addMessage(cleanMessages);
-      allCleanMessages.push(cleanMessages);
+      if (cleanMessages.roomname === currentRoom) {
+        allCleanMessages.push(cleanMessages);
+      } else if (currentRoom === 'All Messages') {
+        allCleanMessages.push(cleanMessages);
+      }
     }
 
     app.displayMessages(allCleanMessages);
   };
 
   app.escapeRegEx = function(str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|\<\>]/g, "\\$&");
+    if (!str){
+      return 'Bad Text';
+    } 
+    return str.replace(/[\-\[\]\/\{\}\\\^\$\|\<\>]/g, "\\$&");
+    // return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|\<\>]/g, "\\$&");
   };
 
   app.clearMessages = function() {
@@ -137,18 +184,22 @@
   };
 
   app.addRoom = function(room) {
-    $('#roomSelect').append('<a href="#">' + room + '</a>');
+    $('#roomSelect').append('<a href="#" class="room">' + room + '</a>');
 
   };
 
   app.addFriend = function(name) {
-    //need to fill
+    console.log('adding no friends', name);
+    if (!app.friends[name]) {
+      app.friends[name] = name;
+    }
   };
 
   app.handleSubmit = function(message, username) {
     var messageObject = {};
     messageObject.text = message;
     messageObject.username = username || undefined;
+    messageObject.roomname = currentRoom === 'All Messages' ? null : currentRoom;
     app.send(messageObject);
     app.fetch();
   };
