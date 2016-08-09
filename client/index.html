@@ -6,18 +6,34 @@
     <link rel="stylesheet" href="styles/styles.css">
 
     <!-- dependencies -->
+    <script src="../lib/d3.js" charset="utf-8"></script>
     <script src="bower_components/jquery/dist/jquery.js"></script>
     <script src="bower_components/underscore/underscore.js>"></script>
     <script src="bower_components/backbone/backbone.js"></script>
     <!-- your scripts -->
     <script src="env/config.js"></script>
     <script src="scripts/app.js"></script>
-    <script src="scripts/init.js"></script>
   </head>
   <body>
     <div id="main">
       <h1>chatterbox</h1>
       <!-- Your HTML goes here! -->
+      <div id = "username">
+      <h2>Add a username</h2>
+        <textarea class = "username"></textarea>
+      </div>
+
+      <div id="send">
+      <h2>Add a message</h2>
+        <textarea id="message"></textarea>
+        <button class="submit">Submit</button>
+      </div>
+      <div class="dropdown">
+        <button onclick="dropdown()" class="dropbtn">Room List</button>
+        <div id="roomSelect" class="dropdown-content">
+<!--           <a href="#">Link 1</a> -->
+        </div>
+      </div>
     </div>
     <div id="chats"></div>
     <div class = "newChats"></div>
