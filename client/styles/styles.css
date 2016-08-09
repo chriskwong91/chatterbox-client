@@ -5,6 +5,13 @@ body {
     font-family: arial, sans-serif;
 }
 
+p {
+    text-align: left;
+    border: solid grey;
+    margin: 10px;
+    padding: 10px;
+    border-width: 5px 5px 5px 5px;
+}
 #main, #chats {
     width: 500px;
     margin: auto;

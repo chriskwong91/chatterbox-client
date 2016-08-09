@@ -34,7 +34,7 @@
 
       setInterval(function() {
         app.fetch();
-      }, 3000);
+      }, 8000);
 
     });
     //var fetchMessageResponses = fetchMessage.responseJSON;
@@ -88,9 +88,15 @@
   app.displayMessages = function(messages) {
 
     console.log('entered');
-    var selection = d3.select('body').select('#chats').selectAll('.username').data(messages);
-    console.log(selection.enter(), selection.enter().length);
-    selection.enter().append("p").text(function(d) { return d.text; });      
+    var selection = d3.select('body').select('#chats').selectAll('p').data(messages);
+    console.log('selection: ', selection, selection.length);
+    console.log('enter: ',selection.enter(), selection.enter().length);
+    console.log('exit ', selection.exit(), selection.exit().length);
+    selection.enter()
+    .append("p")
+    .attr('id', 'message')
+    .attr('class', function(d) { return d.roomname; })
+    .text(function(d) { return d.username + ': ' + d.text; });
 
   };
 
@@ -104,7 +110,7 @@
       var cleanMessages = {};
       for (var key in doneMessages.results[i]) {
         cleanMessages[key] = app.escapeRegEx(doneMessages.results[i][key]);
-        
+
         if (key === 'roomname' && cleanMessages[key].length < 100 && !(app.rooms[cleanMessages[key]])) {
           app.rooms[cleanMessages[key]] = app.rooms[cleanMessages[key]] || [];
           app.rooms[cleanMessages[key]].push(cleanMessages.text);
@@ -127,7 +133,7 @@
   };
 
   app.addMessage = function(message) {
-    $('#chats').append('<p class="username">' + message.username + ': ' + message.text + '</p>'); 
+    $('#chats').append('<p class="username">' + message.username + ': ' + message.text + '</p>');
   };
 
   app.addRoom = function(room) {
@@ -136,7 +142,7 @@
   };
 
   app.addFriend = function(name) {
-    //need to fill  
+    //need to fill
   };
 
   app.handleSubmit = function(message, username) {
@@ -152,3 +158,4 @@
   };
 // });
 
+app.init();
